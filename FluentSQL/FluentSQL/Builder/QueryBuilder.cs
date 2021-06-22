@@ -12,10 +12,9 @@ namespace FluentSQL
     public sealed class QueryBuilder
     {
         private VariableNode _headNode;
-        private HashSet<VariableNode> _variableNodes;
+        private readonly HashSet<VariableNode> _variableNodes;
         private readonly IProvider _provider;
         private readonly FluentSqlOptions _options;
-        private readonly Type _originTableType;
         private int _parameterCounter;
         private ISelectExpressionResolver _selectExpressionResolver;
         private IExpressionResolver _fromExpressionResolver;
@@ -25,23 +24,23 @@ namespace FluentSQL
         {
             _provider = options.Provider;
             _options = options;
-            _originTableType = originTableType;
             _variableNodes = new HashSet<VariableNode>(VariableNode.VariableNameComparer);
-            AddVariable(_originTableType);
+            AddVariable(originTableType);
+            _headNode = _variableNodes.First();
             InitializeBaseExpressionResolvers();
         }
 
         private void InitializeBaseExpressionResolvers()
         {
-            _selectExpressionResolver = new EmptySelectExpressionResolver(_provider,ref _parameterCounter,_sqlVariables);
-            _fromExpressionResolver = new FromExpressionResolver(_provider, ref _parameterCounter, _sqlVariables);
+            _selectExpressionResolver = new EmptySelectExpressionResolver(_provider,ref _parameterCounter, _variableNodes);
+            _fromExpressionResolver = new FromExpressionResolver(_provider, ref _parameterCounter, _variableNodes);
         }
 
         public void AddSelectExpression(LambdaExpression selectExpression)
         {
             if (selectExpression == null) throw new ArgumentNullException(nameof(selectExpression));
             if (_selectExpressionResolver.GetType() == typeof(SelectExpressionResolver)) throw new Exception("Cannot assign multiple select expressions.");
-            _selectExpressionResolver = new SelectExpressionResolver(_provider,selectExpression,ref _parameterCounter,_sqlVariables);
+            _selectExpressionResolver = new SelectExpressionResolver(_provider,selectExpression,ref _parameterCounter,_variableNodes);
         }
 
         public void AddWhereExpression(LambdaExpression lambdaExpression)

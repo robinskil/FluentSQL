@@ -10,9 +10,9 @@ namespace FluentSQL.Mapping
     
         public MappedCollection()
         {
-            PrimaryKeyMappedObjects = new();
-            IncludedForeignKeyMappedObjects = new();
-            IncludedByForeignKeyMappedObjects = new();
+            PrimaryKeyMappedObjects = new Dictionary<object, object>();
+            IncludedForeignKeyMappedObjects = new Dictionary<Include, Dictionary<object, object>>();
+            IncludedByForeignKeyMappedObjects = new Dictionary<IncludedBy, Dictionary<object, object>>();
         }
     }
 }

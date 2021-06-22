@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
+using FluentSQL.Info;
 
 namespace FluentSQL.Builder.ExpressionResolvers
 {
@@ -12,29 +13,29 @@ namespace FluentSQL.Builder.ExpressionResolvers
         private readonly List<DbParameter> _expressionParameters;
         protected IProvider Provider { get; }
         protected LambdaExpression Expression { get; }
-        protected IReadOnlyDictionary<ParameterExpression,SqlVariable> ParameterBoundSqlVariables { get; private set; }
+        protected IReadOnlyDictionary<ParameterExpression, VariableNode> ParameterBoundSqlVariables { get; private set; }
         
         public IReadOnlyList<DbParameter> GetParameters() => _expressionParameters;
 
-        protected ExpressionResolver(IProvider provider, LambdaExpression expression, ref int parameterCounter, IReadOnlyCollection<SqlVariable> sqlVariables)
+        protected ExpressionResolver(IProvider provider, LambdaExpression expression, ref int parameterCounter, IReadOnlyCollection<VariableNode> variableNodes)
         {
             _parameterCounter = parameterCounter;
             _expressionParameters = new List<DbParameter>();
             Provider = provider;
             Expression = expression;
             ValidateExpression();
-            MapSqlVariables(sqlVariables,expression);
+            MapSqlVariables(variableNodes, expression);
         }
 
-        protected virtual void MapSqlVariables(IReadOnlyCollection<SqlVariable> variables, LambdaExpression expression)
+        protected virtual void MapSqlVariables(IReadOnlyCollection<VariableNode> variableNodes, LambdaExpression expression)
         {
-            if (variables.Count != expression.Parameters.Count)
-                throw new Exception("Method Parameters count don't match sql variable count.");
-            var validatedVariables = new (ParameterExpression, SqlVariable)[variables.Count];
+            if (variableNodes.Count != expression.Parameters.Count)
+                throw new Exception("Method Parameters count don't match variable node count.");
+            var validatedVariables = new (ParameterExpression, VariableNode)[variableNodes.Count];
             int counter = 0;
-            foreach (var sqlVariable in variables)
+            foreach (var variableNode in variableNodes)
             {
-                validatedVariables[counter] = (expression.Parameters[counter],sqlVariable);
+                validatedVariables[counter] = (expression.Parameters[counter], variableNode);
                 counter++;
             }
             ParameterBoundSqlVariables = validatedVariables.ToDictionary(a => a.Item1,a => a.Item2);

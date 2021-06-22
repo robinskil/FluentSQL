@@ -2,25 +2,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using FluentSQL.Builder.ExpressionResolvers;
+using FluentSQL.Info;
 
 namespace FluentSQL
 {
     public class FromExpressionResolver : ExpressionResolver, IExpressionResolver
     {
-        private readonly IReadOnlyCollection<SqlVariable> _sqlVariables;
+        private readonly IReadOnlyCollection<VariableNode> _variableNodes;
 
-        public FromExpressionResolver(IProvider provider, ref int parameterCounter, IReadOnlyCollection<SqlVariable> sqlVariables) : base(provider, null, ref parameterCounter, sqlVariables)
+        public FromExpressionResolver(IProvider provider, ref int parameterCounter, IReadOnlyCollection<VariableNode> variableNodes) : base(provider, null, ref parameterCounter, variableNodes)
         {
-            _sqlVariables = sqlVariables;
+            _variableNodes = variableNodes;
         }
 
-        protected override void MapSqlVariables(IReadOnlyCollection<SqlVariable> variables, LambdaExpression expression)
+        protected override void MapSqlVariables(IReadOnlyCollection<VariableNode> variables, LambdaExpression expression)
         {
         }
 
         public override string GetSqlExpression()
         {
-            return $"FROM {Provider.GetTableName(_sqlVariables.First().Type)} AS {_sqlVariables.First().VariableName}";
+            return $"FROM {Provider.GetTableName(_variableNodes.First().Type)} AS {_variableNodes.First().VariableName}";
         }
 
         public override void ValidateExpression()

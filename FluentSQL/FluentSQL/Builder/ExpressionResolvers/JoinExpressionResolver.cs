@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using FluentSQL.Info;
 using FluentSQL.Mapping;
 
 namespace FluentSQL.Builder.ExpressionResolvers
 {
     public class JoinExpressionResolver : ExpressionResolver
     {
-        public JoinExpressionResolver(IProvider provider,List<TypeMapping> typeMappings, LambdaExpression expression, ref int parameterCounter, IReadOnlyCollection<SqlVariable> sqlVariables) : base(provider, expression, ref parameterCounter, sqlVariables)
+        public JoinExpressionResolver(IProvider provider,List<TypeMapping> typeMappings, LambdaExpression expression, ref int parameterCounter, IReadOnlyCollection<VariableNode> variableNodes) : base(provider, expression, ref parameterCounter, variableNodes)
         {
         }
 

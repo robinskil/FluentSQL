@@ -29,7 +29,7 @@ namespace FluentSQL.Info
         public List<ForeignKey> ForeignKeys { get; }
         public TableInfo(Type type)
         {
-            ForeignKeys = new();
+            ForeignKeys = new List<ForeignKey>();
             TableType = type;
         }
     }

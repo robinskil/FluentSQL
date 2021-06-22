@@ -10,7 +10,7 @@ namespace FluentSQL.Mapping
         /// <summary>
         /// These are the columns mapped from the query to the object. These are all value types + string
         /// </summary>
-        public List<(string columnName, PropertyInfo propertyInfo)> ColumnMappedProperties { get; } = new();
+        public List<(string columnName, PropertyInfo propertyInfo)> ColumnMappedProperties { get; } = new List<(string columnName, PropertyInfo propertyInfo)>();
         /// <summary>
         /// 
         /// </summary>
@@ -18,7 +18,7 @@ namespace FluentSQL.Mapping
         public List<Include> IncludedProperties { get; }
         public List<IncludedBy> IncludedByOthers { get; }
         public Type MappedType { get; }
-        public Queue<PropertyInfo> PropertiesForConstructorMappedType { get; } = new();
+        public Queue<PropertyInfo> PropertiesForConstructorMappedType { get; } = new Queue<PropertyInfo>();
 
         public TypeMapping(Type mappedType)
         {
@@ -44,7 +44,7 @@ namespace FluentSQL.Mapping
             IncludedProperty = includedProperty;
             ForeignKeyType = foreignKeyType;
             IncludedTypeMapping = includedTypeMapping;
-            PropertiesToCreateForeignKey = new();
+            PropertiesToCreateForeignKey = new Queue<PropertyInfo>();
         }
     }
 
@@ -60,7 +60,7 @@ namespace FluentSQL.Mapping
             ForeignKeyType = foreignKeyType;
             IncludedByTypeMapping = includedByTypeMapping;
             IncludedByProperty = includedByProperty;
-            PropertiesToCreateForeignKey = new();
+            PropertiesToCreateForeignKey = new Queue<PropertyInfo>();
         }
 
     }

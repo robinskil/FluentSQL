@@ -1,26 +1,25 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using FluentSQL.Builder.ExpressionResolvers;
+using FluentSQL.Info;
+using FluentSQL.Mapping;
 
 namespace FluentSQL
 {
     public class SelectExpressionResolver : ExpressionResolver, ISelectExpressionResolver
     {
-        private List<string> _columnsToInclude;
-        private List<Mapping.Mapping> _mappings;
+        private Dictionary<ParameterExpression, TypeMapping> _typeMappings;
         
-        
-        public SelectExpressionResolver(IProvider provider, LambdaExpression expression, ref int parameterCounter,IReadOnlyCollection<SqlVariable> sqlVariables) : base(provider, expression, ref parameterCounter,sqlVariables)
+        public SelectExpressionResolver(IProvider provider, LambdaExpression expression, ref int parameterCounter,IReadOnlyCollection<VariableNode> variableNodes) : base(provider, expression, ref parameterCounter,variableNodes)
         {
-            _columnsToInclude = new List<string>();
-            _mappings = new List<Mapping.Mapping>();
+            _typeMappings = new Dictionary<ParameterExpression, TypeMapping>();
         }
 
         public override string GetSqlExpression()
         {
-            var baseMappingDictionary = new Dictionary<SqlVariable, List<(string columnName,PropertyInfo propertyToMapTo)>>();
             if (Expression.Body is MemberInitExpression memberInitExpression)
             {
                 foreach (var memberBinding in memberInitExpression.Bindings)
@@ -28,22 +27,21 @@ namespace FluentSQL
                     if (memberBinding is MemberAssignment memberAssignment && memberAssignment.Expression is MemberExpression memberAssignmentExpression 
                                                                            && memberAssignmentExpression.Expression is ParameterExpression parameterExpression)
                     {
-                        _columnsToInclude.Add($"{ParameterBoundSqlVariables[parameterExpression].VariableName}.{memberAssignmentExpression.Member.Name} AS" +
-                                              $" {ParameterBoundSqlVariables[parameterExpression].VariableName}_{memberAssignmentExpression.Member.Name}");
-                        if (!baseMappingDictionary.ContainsKey(ParameterBoundSqlVariables[parameterExpression]))
+                        if (!_typeMappings.ContainsKey(parameterExpression))
                         {
-                            baseMappingDictionary.Add(ParameterBoundSqlVariables[parameterExpression],new List<(string columnName, PropertyInfo propertyToMapTo)>());
+                            _typeMappings.Add(parameterExpression,new TypeMapping(null));
                         }
-                        baseMappingDictionary[ParameterBoundSqlVariables[parameterExpression]].Add(
-                            ($"{memberAssignmentExpression.Member.Name}",memberAssignment.Member as PropertyInfo));
+                        // _columnsToInclude.Add($"{ParameterBoundSqlVariables[parameterExpression].VariableName}.{memberAssignmentExpression.Member.Name} AS" +
+                        //                       $" {ParameterBoundSqlVariables[parameterExpression].VariableName}_{memberAssignmentExpression.Member.Name}");
+                        // if (!baseMappingDictionary.ContainsKey(ParameterBoundSqlVariables[parameterExpression]))
+                        // {
+                        //     baseMappingDictionary.Add(ParameterBoundSqlVariables[parameterExpression],new List<(string columnName, PropertyInfo propertyToMapTo)>());
+                        // }
+                        // baseMappingDictionary[ParameterBoundSqlVariables[parameterExpression]].Add(
+                        //     ($"{memberAssignmentExpression.Member.Name}",memberAssignment.Member as PropertyInfo));
                     }
                 }
-
-                foreach (var mappingPerVariable in baseMappingDictionary)
-                {
-                    _mappings.Add(new Mapping.Mapping(mappingPerVariable.Key.VariableName,mappingPerVariable.Key.Type,mappingPerVariable.Value));
-                }
-                return $"SELECT {string.Join(",",_columnsToInclude)}";
+                return $"SELECT {string.Join(",",null)}";
             }
             else
             {
@@ -73,9 +71,9 @@ namespace FluentSQL
             }
         }
 
-        public List<Mapping.Mapping> GenerateMappings()
+        public List<TypeMapping> GenerateMappings()
         {
-            return _mappings;
+            return _typeMappings.Values.ToList();
         }
     }
 }

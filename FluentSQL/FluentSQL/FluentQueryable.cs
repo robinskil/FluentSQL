@@ -35,11 +35,11 @@ namespace FluentSQL
             return _queryExecutor.ExecuteQueryAndMap<T>();
         }
 
-        public IFluentQueryable<T, TInclude> Join<TInclude>(Expression<Func<T, TInclude>> joinExpression)
-            where TInclude : class
-        {
-            
-        }
+        // public IFluentQueryable<T, TInclude> Join<TInclude>(Expression<Func<T, TInclude>> joinExpression)
+        //     where TInclude : class
+        // {
+        //     
+        // }
 
         public IFluentQueryable<TOut> Select<TOut>(Expression<Func<T, TOut>> selectExpression) where TOut : class
         {

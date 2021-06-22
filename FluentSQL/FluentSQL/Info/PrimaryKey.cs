@@ -12,7 +12,7 @@ namespace FluentSQL.Info
         public PrimaryKey(Type type)
         {
             TypeOfPrimaryKey = type;
-            PushOnConstructorPrimaryKeyType = new();
+            PushOnConstructorPrimaryKeyType = new Queue<PropertyInfo>();
         }
     }
 }

@@ -36,25 +36,25 @@ namespace FluentSQL
             while (dataReader.Read())
             {
                 //We map everything we can every row.
-                foreach (var mapping in mappings)
-                {
-                    if (mapping.MappingInfo.IsAnonymousType)
-                    {
-                        //objects.Add(MapAnonymousObject(dataReader,mapping) as T);
-                    }
-                    else
-                    {
-                        var obj = Activator.CreateInstance(mapping.MappingInfo.MapToType, BindingFlags.Public | BindingFlags.Instance,
-                            null, null, CultureInfo.CurrentCulture);
-                        foreach (var propertyToMap in mapping.MappingInfo.MappedPropertiesForType)
-                        {
-                            var val = dataReader[$"{mapping.SqlVariableName}_{propertyToMap.Item1}"];
-                            propertyToMap.Item2.SetMethod.Invoke(obj,BindingFlags.Instance|BindingFlags.Public,null,new []{val},CultureInfo.CurrentCulture);
-                        }
-                        objects.Add(obj as T);
-                    }
-
-                }
+                // foreach (var mapping in mappings)
+                // {
+                //     if (mapping.MappingInfo.IsAnonymousType)
+                //     {
+                //         //objects.Add(MapAnonymousObject(dataReader,mapping) as T);
+                //     }
+                //     else
+                //     {
+                //         var obj = Activator.CreateInstance(mapping.MappingInfo.MapToType, BindingFlags.Public | BindingFlags.Instance,
+                //             null, null, CultureInfo.CurrentCulture);
+                //         foreach (var propertyToMap in mapping.MappingInfo.MappedPropertiesForType)
+                //         {
+                //             var val = dataReader[$"{mapping.SqlVariableName}_{propertyToMap.Item1}"];
+                //             propertyToMap.Item2.SetMethod.Invoke(obj,BindingFlags.Instance|BindingFlags.Public,null,new []{val},CultureInfo.CurrentCulture);
+                //         }
+                //         objects.Add(obj as T);
+                //     }
+                //
+                // }
             }
             return objects;
         }

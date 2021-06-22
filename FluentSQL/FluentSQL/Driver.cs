@@ -16,7 +16,7 @@ namespace FluentSQL
 
         public IFluentQueryable<T> From<T>() where T : class
         {
-            return new FluentQueryable<T>(_provider);
+            return new FluentQueryable<T>(_options);
         }
     }
 }
