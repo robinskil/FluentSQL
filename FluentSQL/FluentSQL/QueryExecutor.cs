@@ -40,7 +40,7 @@ namespace FluentSQL
                 {
                     if (mapping.MappingInfo.IsAnonymousType)
                     {
-                        objects.Add(MapAnonymousObject(dataReader,mapping) as T);
+                        //objects.Add(MapAnonymousObject(dataReader,mapping) as T);
                     }
                     else
                     {
@@ -58,17 +58,5 @@ namespace FluentSQL
             }
             return objects;
         }
-
-        private object MapAnonymousObject(DbDataReader dbDataReader, Mapping mapping)
-        {
-            List<object> properties = new List<object>();
-            foreach (var (columnName, _) in mapping.MappingInfo.MappedPropertiesForType)
-            {
-                properties.Add(dbDataReader[$"{mapping.SqlVariableName}_{columnName}"]);                
-            }
-            return Activator.CreateInstance(mapping.MappingInfo.MapToType, BindingFlags.Public | BindingFlags.Instance, null,
-                properties, CultureInfo.CurrentCulture);
-        }
-        
     }
 }

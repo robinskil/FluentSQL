@@ -9,7 +9,7 @@ namespace TestFluentSql.Models
         public string FirstName { get; set; }
         public int Age { get; set; }
         public string UniversityName { get; set; }
-        public University University { get; set; }
+        public University University { get; set; } //Select( a => a.University, a.StudentCourses
         public List<StudentCourse> StudentCourses { get; set; }
     }
 

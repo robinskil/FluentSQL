@@ -44,7 +44,7 @@ namespace TestFluentSql
         {
             if (_currentDriver == null)
             {
-                _currentDriver = new Driver(SqlServerProvider());
+                _currentDriver = new Driver(new FluentSqlOptions().SelectProvider(SqlServerProvider()));
             }
             return _currentDriver;
         }
@@ -95,14 +95,15 @@ namespace TestFluentSql
         [Fact]
         public void Test_Select_DuplicatedColumnUse_ToList_SingleTable_2()
         {
-            var driver = _sqlServerDatabase.GetFluentDriver();
-            var students =  driver.From<Student>().Select(a => 
-                new {FirstName = a.FirstName, UniversityName = a.FirstName, StudentCourses = a.StudentCourses.Select(a => a).ToList() }).ToList();
-            Assert.Equal(1000,students.Count);
-            for (int i = 0; i < 1000; i++)
-            {
-                Assert.Equal(students[i].FirstName,students[i].UniversityName);
-            }
+            // var driver = _sqlServerDatabase.GetFluentDriver();
+            // var students =  driver.From<Student>().Select(a => 
+            //     new { FirstName = a.FirstName, Teachers = a.StudentCourses.Select(a => a.Course.StudentCourses).ToList(), a.University }).ToList();
+            // var s = students.First().Teachers;
+            // Assert.Equal(1000,students.Count);
+            // for (int i = 0; i < 1000; i++)
+            // {
+            //     Assert.Equal(students[i].FirstName,students[i].UniversityName);
+            // }
         }
         
         [Fact]

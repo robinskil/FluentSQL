@@ -23,7 +23,6 @@ namespace FluentSQL
         }
 
         public static IEqualityComparer<SqlVariable> VariableNameComparer { get; } = new VariableNameEqualityComparer();
-
         public Type Type { get; set; }
         public string VariableName { get; set; }
     }
