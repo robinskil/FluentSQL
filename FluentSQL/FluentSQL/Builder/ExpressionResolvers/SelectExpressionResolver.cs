@@ -11,56 +11,80 @@ namespace FluentSQL
 {
     public class SelectExpressionResolver : ExpressionResolver, ISelectExpressionResolver
     {
-        private Dictionary<ParameterExpression, TypeMapping> _typeMappings;
-        
-        public SelectExpressionResolver(IProvider provider, LambdaExpression expression, ref int parameterCounter,IReadOnlyCollection<VariableNode> variableNodes) : base(provider, expression, ref parameterCounter,variableNodes)
+        private readonly FluentSqlOptions _options;
+        private readonly IReadOnlyCollection<VariableNode> _variableNodes;
+        private TypeMapping _typeMapping;
+
+        public SelectExpressionResolver(FluentSqlOptions options, LambdaExpression expression, ref int parameterCounter,
+            IReadOnlyCollection<VariableNode> variableNodes) : base(options.Provider, expression, ref parameterCounter,
+            variableNodes)
         {
-            _typeMappings = new Dictionary<ParameterExpression, TypeMapping>();
+            _options = options;
+            _variableNodes = variableNodes;
         }
 
         public override string GetSqlExpression()
         {
             if (Expression.Body is MemberInitExpression memberInitExpression)
             {
-                foreach (var memberBinding in memberInitExpression.Bindings)
-                {
-                    if (memberBinding is MemberAssignment memberAssignment && memberAssignment.Expression is MemberExpression memberAssignmentExpression 
-                                                                           && memberAssignmentExpression.Expression is ParameterExpression parameterExpression)
-                    {
-                        if (!_typeMappings.ContainsKey(parameterExpression))
-                        {
-                            _typeMappings.Add(parameterExpression,new TypeMapping(null));
-                        }
-                        // _columnsToInclude.Add($"{ParameterBoundSqlVariables[parameterExpression].VariableName}.{memberAssignmentExpression.Member.Name} AS" +
-                        //                       $" {ParameterBoundSqlVariables[parameterExpression].VariableName}_{memberAssignmentExpression.Member.Name}");
-                        // if (!baseMappingDictionary.ContainsKey(ParameterBoundSqlVariables[parameterExpression]))
-                        // {
-                        //     baseMappingDictionary.Add(ParameterBoundSqlVariables[parameterExpression],new List<(string columnName, PropertyInfo propertyToMapTo)>());
-                        // }
-                        // baseMappingDictionary[ParameterBoundSqlVariables[parameterExpression]].Add(
-                        //     ($"{memberAssignmentExpression.Member.Name}",memberAssignment.Member as PropertyInfo));
-                    }
-                }
-                return $"SELECT {string.Join(",",null)}";
+                return $"SELECT {string.Join(",", ResolveMemberInitExpression(memberInitExpression))}";
+            }
+            else if(Expression.Body is NewExpression newExpression)
+            {
+                return $"SELECT {string.Join(",", ResolveNewExpression(newExpression))}";
             }
             else
             {
-                ResolveNewExpression(Expression.Body as NewExpression);
-                return $"SELECT";
+                throw new NotImplementedException();
             }
         }
 
-        private void ResolveNewExpression(NewExpression newExpression)
+        private List<string> ResolveMemberInitExpression(MemberInitExpression memberInitExpression)
         {
-            // var propertiesToMap = new List<(string, PropertyInfo)>();
-            // _mappings.Add(new Mapping(ParameterBoundSqlVariables[parameter].VariableName,propertiesToMap));
-            // foreach (var argument in newExpression.Arguments)
-            // {
-            //     var expr = argument as MemberExpression;
-            //     var parameter = expr.Expression as ParameterExpression;
-            //     propertiesToMap.Add();
-            // }
-            //a : student => { a.University }
+            var columns = new List<string>();
+            _typeMapping = new TypeMapping(memberInitExpression.Type);
+            foreach (var memberBinding in memberInitExpression.Bindings)
+            {
+                if (memberBinding is MemberAssignment memberAssignment &&
+                    memberAssignment.Expression is MemberExpression memberAccessExpression &&
+                    memberAccessExpression.Expression is ParameterExpression parameterExpression)
+                {
+                    var columnQueryName =
+                        $"{ParameterBoundVariableNodes[parameterExpression].VariableName}.{memberAccessExpression.Member.Name} AS " +
+                        $"{ParameterBoundVariableNodes[parameterExpression].VariableName}_{memberAccessExpression.Member.Name}";
+                    columns.Add(columnQueryName);
+                    _typeMapping.ColumnMappedProperties.Add((
+                        $"{ParameterBoundVariableNodes[parameterExpression].VariableName}_{memberAccessExpression.Member.Name}",
+                        memberAssignment.Member as PropertyInfo));
+                }
+            }
+            return columns;
+        }
+
+        private List<string> ResolveNewExpression(NewExpression newExpression)
+        {
+            var columns = new List<string>();
+            _typeMapping = new TypeMapping(newExpression.Type);
+            _typeMapping.PrimaryKey = _options.TableInfos[_variableNodes.First().Type].PrimaryKey;
+            foreach (var argument in newExpression.Arguments)
+            {
+                if (argument is MemberExpression memberAccessExpression &&
+                    memberAccessExpression.Expression is ParameterExpression parameterExpression)
+                {
+                    _typeMapping.PropertiesForConstructorMappedType.Enqueue(
+                        memberAccessExpression.Member as PropertyInfo);
+                    var columnQueryName =
+                        $"{ParameterBoundVariableNodes[parameterExpression].VariableName}.{memberAccessExpression.Member.Name} AS " +
+                        $"{ParameterBoundVariableNodes[parameterExpression].VariableName}_{memberAccessExpression.Member.Name}";
+                    _typeMapping.ColumnMappedProperties.Add((
+                        $"{ParameterBoundVariableNodes[parameterExpression].VariableName}_{memberAccessExpression.Member.Name}",
+                        memberAccessExpression.Member as PropertyInfo));
+                    columns.Add(columnQueryName);
+                }
+                else throw new NotImplementedException();
+            }
+
+            return columns;
         }
 
         public sealed override void ValidateExpression()
@@ -71,9 +95,9 @@ namespace FluentSQL
             }
         }
 
-        public List<TypeMapping> GenerateMappings()
+        public TypeMapping GenerateMapping()
         {
-            return _typeMappings.Values.ToList();
+            return _typeMapping;
         }
     }
 }

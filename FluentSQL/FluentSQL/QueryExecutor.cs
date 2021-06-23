@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
+using FluentSQL.Mapping.Processors;
 
 namespace FluentSQL
 {
@@ -29,34 +31,11 @@ namespace FluentSQL
             return objects;
         }
 
-        public List<T> GetMappedObjects<T>(DbDataReader dataReader) where T : class
+        private List<T> GetMappedObjects<T>(DbDataReader dataReader) where T : class
         {
-            var mappings = _builder.GetMappings();
-            var objects = new List<T>();
-            while (dataReader.Read())
-            {
-                //We map everything we can every row.
-                // foreach (var mapping in mappings)
-                // {
-                //     if (mapping.MappingInfo.IsAnonymousType)
-                //     {
-                //         //objects.Add(MapAnonymousObject(dataReader,mapping) as T);
-                //     }
-                //     else
-                //     {
-                //         var obj = Activator.CreateInstance(mapping.MappingInfo.MapToType, BindingFlags.Public | BindingFlags.Instance,
-                //             null, null, CultureInfo.CurrentCulture);
-                //         foreach (var propertyToMap in mapping.MappingInfo.MappedPropertiesForType)
-                //         {
-                //             var val = dataReader[$"{mapping.SqlVariableName}_{propertyToMap.Item1}"];
-                //             propertyToMap.Item2.SetMethod.Invoke(obj,BindingFlags.Instance|BindingFlags.Public,null,new []{val},CultureInfo.CurrentCulture);
-                //         }
-                //         objects.Add(obj as T);
-                //     }
-                //
-                // }
-            }
-            return objects;
+            var mapping = _builder.GetMapping();
+            var mappingProcessor = new MappingProcessor(mapping);
+            return mappingProcessor.GetObjects<T>(dataReader);
         }
     }
 }

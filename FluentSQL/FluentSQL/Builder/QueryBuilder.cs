@@ -40,17 +40,12 @@ namespace FluentSQL
         {
             if (selectExpression == null) throw new ArgumentNullException(nameof(selectExpression));
             if (_selectExpressionResolver.GetType() == typeof(SelectExpressionResolver)) throw new Exception("Cannot assign multiple select expressions.");
-            _selectExpressionResolver = new SelectExpressionResolver(_provider,selectExpression,ref _parameterCounter,_variableNodes);
+            _selectExpressionResolver = new SelectExpressionResolver(_options,selectExpression,ref _parameterCounter,_variableNodes);
         }
 
         public void AddWhereExpression(LambdaExpression lambdaExpression)
         {
             _whereExpression = lambdaExpression ?? throw new ArgumentNullException(nameof(lambdaExpression));
-        }
-
-        public void AddJoinExpression(LambdaExpression lambdaExpression)
-        {
-            
         }
 
         public DbCommand GetDbCommand()
@@ -64,9 +59,9 @@ namespace FluentSQL
             return command;
         }
 
-        public List<TypeMapping> GetMappings()
+        public TypeMapping GetMapping()
         {
-            return _selectExpressionResolver.GenerateMappings();
+            return _selectExpressionResolver.GenerateMapping();
         }
 
         private IReadOnlyList<DbParameter> GetAllParameters()

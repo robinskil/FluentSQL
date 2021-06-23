@@ -5,6 +5,6 @@ namespace FluentSQL
 {
     public interface ISelectExpressionResolver : IExpressionResolver
     {
-        List<TypeMapping> GenerateMappings();
+        TypeMapping GenerateMapping();
     }
 }

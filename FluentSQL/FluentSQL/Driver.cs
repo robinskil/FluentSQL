@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.Contracts;
 using System.Runtime.ExceptionServices;
+using FluentSQL.Mapping.Processors;
 
 namespace FluentSQL
 {

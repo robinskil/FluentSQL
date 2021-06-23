@@ -13,7 +13,7 @@ namespace FluentSQL.Builder.ExpressionResolvers
         private readonly List<DbParameter> _expressionParameters;
         protected IProvider Provider { get; }
         protected LambdaExpression Expression { get; }
-        protected IReadOnlyDictionary<ParameterExpression, VariableNode> ParameterBoundSqlVariables { get; private set; }
+        protected IReadOnlyDictionary<ParameterExpression, VariableNode> ParameterBoundVariableNodes { get; private set; }
         
         public IReadOnlyList<DbParameter> GetParameters() => _expressionParameters;
 
@@ -38,7 +38,7 @@ namespace FluentSQL.Builder.ExpressionResolvers
                 validatedVariables[counter] = (expression.Parameters[counter], variableNode);
                 counter++;
             }
-            ParameterBoundSqlVariables = validatedVariables.ToDictionary(a => a.Item1,a => a.Item2);
+            ParameterBoundVariableNodes = validatedVariables.ToDictionary(a => a.Item1,a => a.Item2);
         }
 
         public string AddParameter(object value)

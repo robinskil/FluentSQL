@@ -20,14 +20,15 @@ namespace FluentSQL.Mapping
         {
             if (typeMapping.MappedType.IsAnonymousType())
             {
-                return Activator.CreateInstance(typeMapping.MappedType, BindingFlags.Instance, null,
-                    typeMapping.PropertiesForConstructorMappedType.Select(a =>
+                var parameters = typeMapping.PropertiesForConstructorMappedType.Select(a =>
                         dbDataReader[
-                            typeMapping.ColumnMappedProperties.First((tuple => tuple.propertyInfo == a)).columnName]));
+                            typeMapping.ColumnMappedProperties.First((tuple => tuple.propertyInfo == a)).columnName])
+                    .ToArray();
+                return typeMapping.MappedType.GetConstructors().First().Invoke(parameters);
             }
             else
             {
-                var obj =  Activator.CreateInstance(typeMapping.MappedType, BindingFlags.Default);
+                var obj =  Activator.CreateInstance(typeMapping.MappedType);
                 typeMapping.ColumnMappedProperties.ForEach(tuple =>
                     tuple.propertyInfo.SetValue(obj,dbDataReader[tuple.columnName]));
                 return obj;
@@ -41,13 +42,5 @@ namespace FluentSQL.Mapping
                 foreignKeyCreationInfo.PropertiesToCreateForeignKey.Select(a =>
                 dbDataReader[columnMappedProperties.First((tuple => tuple.propertyInfo == a)).columnName]));
         }
-        
-        
-        
-        /*
-         *  TypeMapping => (Primary Key,List<anonymous_object>)
-         *                 (List<Foreign Key,List<anonymous_object>>)
-         * 
-         */
     }
 }
